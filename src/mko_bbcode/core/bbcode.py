@@ -69,8 +69,8 @@ def _fmt_aspect_ratio(width, height) -> str:
         ratio = int(width) / int(height)
         if ratio < 1.4:   return "Tela Cheia (4x3)"
         elif ratio < 1.8: return "Widescreen (16x9)"
-        elif ratio < 2.3: return "Widescreen (2.35:1)"
-        else:             return "Widescreen (2.39:1)"
+        elif ratio < 2.3: return "Scope (2.35:1)"
+        else:             return "Scope (2.39:1)"
     except Exception:
         return "Widescreen (16x9)"
 
@@ -178,56 +178,39 @@ class BBCode:
         imdb  = match.group() if match else data.imdb_url
 
         bbcode = (
-            f"[tablePrinc]\n"
-            f"[tr][titMasc]Título do Filme[/titMasc][/tr]\n"
-            f"[tr]\n"
-            f"[titTrad]{data.title_br}[/titTrad]\n"
-            f"[titOri]{data.title}[/titOri]\n"
-            f"[release]{release}[/release]\n"
-            f"[/tr]\n"
-            f"[tr]\n"
-            f"[posterMasc]Poster[/posterMasc]\n"
-            f"[sinopseMasc]Sinopse[/sinopseMasc]\n"
-            f"[/tr]\n"
-            f"[tr]\n"
-            f"[poster][posterIma]{data.poster}[/posterIma][/poster]\n"
-            f"[sinopse]{data.synopsis}[/sinopse]\n"
-            f"[tableScreen]Screenshots[/tableScreen]\n"
+            f"[tablePrinc][tr][titMasc]Título do Filme[/titMasc][/tr]"
+            f"[tr][titTrad]{data.title_br}[/titTrad][titOri]{data.title}[/titOri]"
+            f"[release]{release}[/release][/tr]"
+            f"[tr][posterMasc]Poster[/posterMasc][sinopseMasc]Sinopse[/sinopseMasc][/tr]"
+            f"[tr][poster][posterIma]{data.poster}[/posterIma][/poster][sinopse]{data.synopsis}[/sinopse]"
+            f"[tableScreen]Screenshots[/tableScreen]"
         )
 
         screenshots = [s.strip() for s in data.screenshots.split(",") if s.strip()]
-        for n, shot in enumerate(screenshots):
-            if n % 2 == 0:
-                if n != 0:
-                    bbcode += "[/tr]"
-                bbcode += "[tr]"
-            side = "screenLeft" if n % 2 == 0 else "screenRight"
-            bbcode += f"[{side}][screenIma]{shot}[/screenIma][/{side}]"
-        bbcode += "[/tr]"
+        pairs = [screenshots[i:i+2] for i in range(0, len(screenshots), 2)]
+        for i, pair in enumerate(pairs):
+            left = pair[0]
+            right = pair[1] if len(pair) > 1 else ""
+            right_tag = f"[screenRight][screenIma]{right}[/screenIma][/screenRight]" if right else ""
+            open_tr = "" if i == 0 else "[tr]"
+            close_tr = "" if i == len(pairs) - 1 else "[/tr]"
+            bbcode += f"{open_tr}[screenLeft][screenIma]{left}[/screenIma][/screenLeft]{right_tag}{close_tr}"
 
         bbcode += (
-            f"[closeTab][/closeTab]\n"
-            f"[/tr]\n"
-            f"[/tablePrinc]\n"
-            f"[tablePrinc]\n"
-            f"[tr]\n"
-            f"[posterMasc]Elenco[/posterMasc]\n"
-            f"[infoMasc]Informações sobre o filme[/infoMasc]\n"
-            f"[infoMasc]Informações sobre o release[/infoMasc]\n"
-            f"[/tr]\n"
-            f"[tr]\n"
-            f"[elenco]{data.cast}[/elenco]\n"
-            f"[info]\n"
-            f"[b]Gênero: [/b]{data.genre}\n"
+            f"[closeTab][/closeTab][/tr][/tablePrinc]"
+            f"[tablePrinc][tr][posterMasc]Elenco[/posterMasc]"
+            f"[infoMasc]Informações sobre o filme[/infoMasc]"
+            f"[infoMasc]Informações sobre o release[/infoMasc]"
+            f"[/tr][tr][elenco]{data.cast}[/elenco]"
+            f"[info][b]Gênero: [/b]{data.genre}\n"
             f"[b]Diretor: [/b]{data.director}\n"
             f"[b]Duração: [/b]{data.duration} minutos\n"
             f"[b]Ano de Lançamento: [/b]{data.year}\n"
             f"[b]País de Origem: [/b]{data.country}\n"
             f"[b]Idioma do Áudio: [/b]{data.audio_language}\n"
             f"[b]IMDB: [/b][url={imdb}]{imdb}[/url]\n"
-            f"[/info]\n"
-            f"[info]\n"
-            f"[b]Qualidade de Vídeo: [/b]{data.quality}\n"
+            f"[/info]"
+            f"[info][b]Qualidade de Vídeo: [/b]{data.quality}\n"
             f"[b]Container: [/b]{container}\n"
             f"[b]Vídeo Codec: [/b]{video_codec}\n"
             f"[b]Vídeo Bitrate: [/b]{video_bitrate}\n"
@@ -237,9 +220,7 @@ class BBCode:
             f"[b]Formato de Tela: [/b]{aspect_ratio}\n"
             f"[b]Frame Rate: [/b]{frame_rate} FPS\n"
             f"[b]Tamanho: [/b]{size}\n"
-            f"[b]Legendas: [/b]{data.subtitles}\n"
-            f"[/info]\n"
-            f"[/tr]\n"
+            f"[b]Legendas: [/b]{data.subtitles}[/info]"
         )
 
         if data.awards.strip():
@@ -259,7 +240,7 @@ class BBCode:
             )
 
         bbcode += (
-            "[tr][rodape]"
+            "[/tr][tr][rodape]"
             "Coopere, deixe semeando ao menos duas vezes o tamanho do arquivo que baixar."
             "[/rodape][/tr][/tablePrinc]"
         )
