@@ -81,8 +81,8 @@ def _fmt_video_codec(audio_format: str) -> str:
     """
 
     _VIDEO_MAP = {
-        "AVC":  "H.264 (AVC)",
-        "HEVC": "H.265 (HEVC)",
+        "AVC":  "H.264",
+        "HEVC": "H.265",
         "AV1":  "AV1",
         "VP9":  "VP9",
         "XVID": "XviD",
